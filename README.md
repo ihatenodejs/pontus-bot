@@ -6,6 +6,7 @@ It can be a great way to offer easy access to your open-source Android apps and/
 I am new to creating Telegram bots, so excuse the clutter and possibly unoptimized code.
 
 ## Installation
+### Non-Dockerized
 1. **Clone the repository**
    ```bash
    git clone https://github.com/ihatenodejs/pontus-bot.git
@@ -37,6 +38,40 @@ I am new to creating Telegram bots, so excuse the clutter and possibly unoptimiz
    ```bash
    node bot.js
    ```
+### Dockerized
+1. **Clone the repository**
+   ```bash
+   git clone https://github.com/ihatenodejs/pontus-bot.git
+   cd pontus-bot
+   ```
+
+2. **Change environment variables**
+
+   Copy the `.env.example` file to `.env`, and add your own data in. You may obtain `BOT_TOKEN` from @BotFather.
+
+   ```bash
+   cp .env.example .env
+   ```
+
+   After copying, you may delete the `.env.example` file.
+
+3. **Set up your file index**
+
+   Copy the `files.json.example` to `files.json`, and add your own data in.
+
+   ```bash
+   cp files.json.example files.json
+   ```
+
+   The example file showcases two situations where there may be one or many architectures.
+
+4. **Build and run the Docker container**
+
+   ```bash
+   docker-compose up --build
+   ```
+
+   This will build the Docker image and start the bot in a Docker container.
 
 ## Commands
 PontusBot has the following commands:
