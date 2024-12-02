@@ -1,0 +1,33 @@
+{
+  "apkFiles": [
+    {
+        "id": "1",
+        "name": "Example Single Arch",
+        "fileSize": "22 MB",
+        "multipleArch": false,
+        "architecture": "x86",
+        "link": "https://example.com",
+        "isMod": false,
+        "author": "GitHub Open Source"
+    },
+    {
+        "id": "4",
+        "name": "Example Multiple Arch",
+        "multipleArch": true,
+        "architectures": [
+            {
+                "architecture": "universal",
+                "fileSize": "60 MB",
+                "link": "https://github.com/example"
+            },
+            {
+                "architecture": "arm64",
+                "fileSize": "20 MB",
+                "link": "https://github.com/example"
+            }
+        ],
+        "isMod": true,
+        "author": "App Modder"
+    }
+  ]
+}
