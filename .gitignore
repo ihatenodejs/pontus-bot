@@ -134,3 +134,6 @@ files.json
 
 # package-lock
 package-lock.json
+
+# docker compose file
+docker-compose.yml
