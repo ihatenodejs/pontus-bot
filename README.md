@@ -25,7 +25,14 @@ I am new to creating Telegram bots, so excuse the clutter and possibly unoptimiz
    ```
 
    After copying, you may delete the `.env.example` file.
-4. **Set up your file index**
+4. **Set up file directory**
+
+   Create a `files` directory to serve files from. Copy all files you would like to serve to users into this directory, and edit the `files.json` file to match the correct path.
+
+   ```bash
+   mkdir files
+   ```
+5. **Set up your file index**
 
    Copy the `files.json.example` to `files.json`, and add your own data in.
 
@@ -34,7 +41,7 @@ I am new to creating Telegram bots, so excuse the clutter and possibly unoptimiz
    ```
 
    The example file showcases two situations where there may be one or many architectures.
-5. **Run the bot**
+6. **Run the bot**
    ```bash
    node bot.js
    ```
@@ -44,7 +51,6 @@ I am new to creating Telegram bots, so excuse the clutter and possibly unoptimiz
    git clone https://github.com/ihatenodejs/pontus-bot.git
    cd pontus-bot
    ```
-
 2. **Change environment variables**
 
    Copy the `.env.example` file to `.env`, and add your own data in. You may obtain `BOT_TOKEN` from @BotFather.
@@ -54,8 +60,14 @@ I am new to creating Telegram bots, so excuse the clutter and possibly unoptimiz
    ```
 
    After copying, you may delete the `.env.example` file.
+4. **Set up file directory**
 
-3. **Set up your file index**
+   Create a `files` directory to serve files from. Copy all files you would like to serve to users into this directory, and edit the `files.json` file to match the correct path.
+
+   ```bash
+   mkdir files
+   ```
+5. **Set up your file index**
 
    Copy the `files.json.example` to `files.json`, and add your own data in.
 
@@ -64,18 +76,17 @@ I am new to creating Telegram bots, so excuse the clutter and possibly unoptimiz
    ```
 
    The example file showcases two situations where there may be one or many architectures.
+6. **Build and run the Docker container**
 
-4. **Build and run the Docker container**
-
-   **4a.** Copy the example docker-compose file
+   **6a.** Copy the example docker-compose file
    ```bash
    cp docker-compose.yml.example docker-compose.yml
    ```
-   **4b.** Create the bot.log file
+   **6b.** Create the bot.log file
    ```bash
    touch bot.log
    ```
-   **4c.** Build and run
+   **6c.** Build and run
    ```bash
    npm install # This should be run on the host, not inside the Docker container
 
@@ -84,7 +95,6 @@ I am new to creating Telegram bots, so excuse the clutter and possibly unoptimiz
    ```
 
    This will install needed dependancies, pull the Docker image and start the bot in a Docker container. You may also build with the included Dockerfile if you wish.
-
 ## Commands
 PontusBot has the following commands:
 
