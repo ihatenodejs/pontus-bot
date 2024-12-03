@@ -9,5 +9,6 @@ services:
       - .:/app
       - ./node_modules:/app/node_modules
       - ./bot.log:/app/bot.log
+      - ./files.json:/app/files.json
     command: ["node", "bot.js"]
     restart: unless-stopped
