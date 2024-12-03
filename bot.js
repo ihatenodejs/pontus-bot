@@ -21,11 +21,14 @@ const bot = new Telegraf(process.env.BOT_TOKEN);
 function generateFileListMessage(files) {
     logger.info(`Generated a file list message`);
     let message = '<b>Available Files:</b>\n\n';
-
-    files.forEach(file => {
-        message += `<b>[${file.id}]</b> ${file.name}\n`;
-    });
-
+    if (Array.isArray(files)) {
+        files.forEach(file => {
+            message += `<b>[${file.id}]</b> ${file.name}\n`;
+        });
+    } else {
+        logger.error('Files is not an array or is undefined');
+        message += 'No files available.';
+    }
     message += `\nTo download a file, type /files get &lt;id&gt;`;
     return message;
 }
@@ -75,11 +78,12 @@ bot.command('about', (ctx) => {
 
 bot.command('files', (ctx) => {
     const args = ctx.message.text.split(' ');
+
     if (args[1] === 'list') {
-        logger.info(`User ${ctx.from.username} requested file list`);
+        logger.info(`User ${ctx.from.username} requested file list (via action)`);
         fs.readFile('files.json', 'utf8', (err, data) => {
             if (err) {
-                console.error(err);
+                logger.error(`Failed to load files: ${err.message}`);
                 ctx.reply('Failed to load files.');
                 return;
             }
@@ -90,11 +94,10 @@ bot.command('files', (ctx) => {
             ctx.replyWithHTML(message);
         });
     } else if (args[1] === 'get' && args[2]) {
-        logger.info(`User ${ctx.from.username} requested to download file with ID: ${args[2]}`);
         const fileId = args[2];
         fs.readFile('files.json', 'utf8', (err, data) => {
             if (err) {
-                console.error(err);
+                logger.error(`Failed to load files: ${err.message}`);
                 ctx.reply('Failed to load files.');
                 return;
             }
@@ -103,14 +106,9 @@ bot.command('files', (ctx) => {
             const file = files.find(f => f.id === fileId);
 
             if (file) {
+                logger.info(`User ${ctx.from.username} requested file: ${file.name} (ID: ${file.id})`);
                 if (file.multipleArch) {
-                    let message = `<b>File found successfully:</b>\n\n`;
-                    message += `<b>${file.name}</b>\n`;
-                    message += `${file.isMod ? '<b>MODDED</b>\n' : ''}`;
-                    message += `Author: ${file.author}\n\n`;
-                    message += `Please select an architecture:`;
-                
-                    ctx.replyWithHTML(message, {
+                    ctx.replyWithHTML(`<b>Select architecture for ${file.name}:</b>`, {
                         reply_markup: {
                             inline_keyboard: [
                                 ...file.architectures.map(arch => [
@@ -126,15 +124,27 @@ bot.command('files', (ctx) => {
                     message += `${file.isMod ? '<b>MODDED</b>\n' : ''}`;
                     message += `Author: ${file.author}\n`;
                     message += `Architecture: ${file.architecture}\n`;
-                    message += `\n`;
-                    message += `<a href="${file.link}">Download</a>\n`;
-                
-                    ctx.replyWithHTML(message, {
-                        reply_markup: {
-                            inline_keyboard: [
-                                [{ text: 'Go Back', callback_data: 'files' }]
-                            ]
-                        }
+                    message += `\nPlease wait for the file to upload...\n`;
+
+                    ctx.replyWithHTML(message).then(() => {
+                        fs.stat(file.filePath, (err, stats) => {
+                            if (err) {
+                                logger.error(`Failed to get file stats: ${err.message}`);
+                                ctx.reply('Failed to get file stats.');
+                                return;
+                            }
+
+                            logger.info(`Sending file: ${file.filePath}, size: ${stats.size} bytes`);
+
+                            ctx.replyWithDocument({ source: file.filePath })
+                                .then(() => {
+                                    logger.info(`User ${ctx.from.username} downloaded file ${file.name}`);
+                                })
+                                .catch(err => {
+                                    logger.error(`Failed to send file: ${err.message}`);
+                                    ctx.reply('Failed to send file.');
+                                });
+                        });
                     });
                 }
             } else {
@@ -142,8 +152,7 @@ bot.command('files', (ctx) => {
             }
         });
     } else {
-        logger.info(`User ${ctx.from.username} entered an invalid command`);
-        ctx.replyWithHTML('Invalid command. Please use the format /files list or /files get &lt;id&gt;');
+        ctx.reply('Invalid command. Use /files list to see available files.');
     }
 });
 
@@ -277,13 +286,13 @@ bot.action(/download_(.+)/, (ctx) => {
         const file = files.find(f => f.id === fileId);
 
         if (file) {
+            logger.info(`User ${ctx.from.username} requested file: ${file.name} (ID: ${file.id})`);
             if (file.multipleArch) {
-                let message = `<b>File found successfully:</b>\n\n`;
-                message += `<b>${file.name}</b>\n`;
+                let message = `<b>${file.name}</b>\n`;
                 message += `${file.isMod ? '<b>MODDED</b>\n' : ''}`;
                 message += `Author: ${file.author}\n\n`;
                 message += `Please select an architecture:`;
-            
+
                 ctx.replyWithHTML(message, {
                     reply_markup: {
                         inline_keyboard: [
@@ -300,15 +309,27 @@ bot.action(/download_(.+)/, (ctx) => {
                 message += `${file.isMod ? '<b>MODDED</b>\n' : ''}`;
                 message += `Author: ${file.author}\n`;
                 message += `Architecture: ${file.architecture}\n`;
-                message += `\n`;
-                message += `<a href="${file.link}">Download</a>\n`;
-            
-                ctx.replyWithHTML(message, {
-                    reply_markup: {
-                        inline_keyboard: [
-                            [{ text: 'Go Back', callback_data: 'files' }]
-                        ]
-                    }
+                message += `\nPlease wait for the file to upload...\n`;
+
+                ctx.replyWithHTML(message).then(() => {
+                    fs.stat(file.filePath, (err, stats) => {
+                        if (err) {
+                            logger.error(`Failed to get file stats: ${err.message}`);
+                            ctx.reply('Failed to get file stats.');
+                            return;
+                        }
+
+                        logger.info(`Sending file: ${file.filePath}, size: ${stats.size} bytes`);
+
+                        ctx.replyWithDocument({ source: file.filePath })
+                            .then(() => {
+                                logger.info(`User ${ctx.from.username} downloaded file ${file.name}`);
+                            })
+                            .catch(err => {
+                                logger.error(`Failed to send file: ${err.message}`);
+                                ctx.reply('Failed to send file.');
+                            });
+                    });
                 });
             }
         } else {
@@ -322,7 +343,7 @@ bot.action(/arch_(.+)_(.+)/, (ctx) => {
     const [fileId, arch] = ctx.match.slice(1);
     fs.readFile('files.json', 'utf8', (err, data) => {
         if (err) {
-            console.error(err);
+            logger.error(`Failed to load files: ${err.message}`);
             ctx.reply('Failed to load files.');
             return;
         }
@@ -334,15 +355,14 @@ bot.action(/arch_(.+)_(.+)/, (ctx) => {
             const selectedArch = file.architectures.find(a => a.architecture === arch);
 
             if (selectedArch) {
-                let message = `<b>File found successfully:</b>\n\n`;
-                message += `<b>${file.name}</b>\n`;
+                logger.info(`User ${ctx.from.username} selected architecture: ${selectedArch.architecture} for file: ${file.name} (ID: ${file.id})`);
+                let message = `<b>${file.name}</b>\n`;
                 message += `Size: ${selectedArch.fileSize}\n`;
                 message += `${file.isMod ? '<b>MODDED</b>\n' : ''}`;
                 message += `Author: ${file.author}\n`;
                 message += `Architecture: ${selectedArch.architecture}\n`;
-                message += `\n`;
-                message += `<a href="${selectedArch.link}">Download</a>\n`;
-                
+                message += `\nPlease wait for the file to upload...\n`;
+
                 ctx.editMessageText(message, {
                     parse_mode: 'HTML',
                     reply_markup: {
@@ -350,6 +370,25 @@ bot.action(/arch_(.+)_(.+)/, (ctx) => {
                             [{ text: 'Go Back', callback_data: `download_${file.id}` }]
                         ]
                     }
+                }).then(() => {
+                    fs.stat(selectedArch.filePath, (err, stats) => {
+                        if (err) {
+                            logger.error(`Failed to get file stats: ${err.message}`);
+                            ctx.reply('Failed to get file stats.');
+                            return;
+                        }
+
+                        logger.info(`Sending file: ${selectedArch.filePath}, size: ${stats.size} bytes`);
+
+                        ctx.replyWithDocument({ source: selectedArch.filePath })
+                            .then(() => {
+                                logger.info(`User ${ctx.from.username} downloaded file ${file.name} (Architecture: ${selectedArch.architecture})`);
+                            })
+                            .catch(err => {
+                                logger.error(`Failed to send file: ${err.message}`);
+                                ctx.reply('Failed to send file.');
+                            });
+                    });
                 });
             } else {
                 ctx.reply('Architecture not found.');
