@@ -1,6 +1,6 @@
 services:
   bot:
-    build: .
+    image: ghcr.io/ihatenodejs/pontus-bot:main
     ports:
       - "3000:3000"
     environment:
