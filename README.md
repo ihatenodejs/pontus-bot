@@ -71,7 +71,11 @@ I am new to creating Telegram bots, so excuse the clutter and possibly unoptimiz
    ```bash
    cp docker-compose.yml.example docker-compose.yml
    ```
-   **4b.** Build and run
+   **4b.** Create the bot.log file
+   ```bash
+   touch bot.log
+   ```
+   **4c.** Build and run
    ```bash
    npm install # This should be run on the host, not inside the Docker container
 
