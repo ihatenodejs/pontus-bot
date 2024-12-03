@@ -79,11 +79,11 @@ I am new to creating Telegram bots, so excuse the clutter and possibly unoptimiz
    ```bash
    npm install # This should be run on the host, not inside the Docker container
 
-   docker-compose up --build # If you are not using docker-compose-plugin
-   docker compose up --build # If you are using docker-compose-plugin
+   docker-compose up -d # If you are not using docker-compose-plugin
+   docker compose up -d # If you are using docker-compose-plugin
    ```
 
-   This will install needed dependancies, build the Docker image and start the bot in a Docker container.
+   This will install needed dependancies, pull the Docker image and start the bot in a Docker container. You may also build with the included Dockerfile if you wish.
 
 ## Commands
 PontusBot has the following commands:
