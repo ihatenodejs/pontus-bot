@@ -1,10 +1,25 @@
 const { Telegraf } = require('telegraf');
 const fs = require('fs');
+const winston = require('winston');
 require('dotenv').config();
+
+const logger = winston.createLogger({
+    level: 'info',
+    format: winston.format.combine(
+        winston.format.timestamp(),
+        winston.format.printf(({ timestamp, level, message }) => {
+            return `${timestamp} [${level.toUpperCase()}]: ${message}`;
+        })
+    ),
+    transports: [
+        new winston.transports.File({ filename: 'bot.log' })
+    ]
+});
 
 const bot = new Telegraf(process.env.BOT_TOKEN);
 
 function generateFileListMessage(files) {
+    logger.info(`Generated a file list message`);
     let message = '<b>Available Files:</b>\n\n';
 
     files.forEach(file => {
@@ -15,34 +30,41 @@ function generateFileListMessage(files) {
     return message;
 }
 
-bot.start((ctx) => ctx.replyWithHTML(
-    `Welcome, <b>${ctx.from.first_name}</b>!\nI'm PontusBot, an open source Telegram bot.\nHow can I help you?`,
-    {
-        reply_markup: {
-        inline_keyboard: [
-            [
-                { text: 'Help', callback_data: 'help' },
-                { text: 'About', callback_data: 'about' }
-            ]
-        ]
+bot.start((ctx) => {
+    logger.info(`User ${ctx.from.username} started the bot`);
+    ctx.replyWithHTML(
+        `Welcome, <b>${ctx.from.first_name}</b>!\nI'm PontusBot, an open source Telegram bot.\nHow can I help you?`,
+        {
+            reply_markup: {
+                inline_keyboard: [
+                    [
+                        { text: 'Help', callback_data: 'help' },
+                        { text: 'About', callback_data: 'about' }
+                    ]
+                ]
+            }
         }
-    }
-));
+    );
+});
 
-bot.help((ctx) => ctx.replyWithHTML('Please choose a topic:', {
-    reply_markup: {
-        inline_keyboard: [
-            [
-                { text: 'General', callback_data: 'general' },
-                { text: 'Files', callback_data: 'hfiles' },
-                { text: 'Management', callback_data: 'management' },
-                { text: 'Go Back', callback_data: 'start' }
+bot.help((ctx) => {
+    logger.info(`User ${ctx.from.username} requested help`);
+    ctx.replyWithHTML('Please choose a topic:', {
+        reply_markup: {
+            inline_keyboard: [
+                [
+                    { text: 'General', callback_data: 'general' },
+                    { text: 'Files', callback_data: 'hfiles' },
+                    { text: 'Management', callback_data: 'management' },
+                    { text: 'Go Back', callback_data: 'start' }
+                ]
             ]
-        ]
-    }
-}));
+        }
+    });
+});
 
 bot.command('about', (ctx) => {
+    logger.info(`User ${ctx.from.username} requested about information`);
     ctx.replyWithHTML(
         `<b>About PontusBot</b>\n\nPontusBot is an open source Telegram bot created by ihatenodejs.\n\nSource code: <a href="https://github.com/ihatenodejs/pontus-bot">Available on GitHub</a>`,
         {
@@ -53,8 +75,8 @@ bot.command('about', (ctx) => {
 
 bot.command('files', (ctx) => {
     const args = ctx.message.text.split(' ');
-
     if (args[1] === 'list') {
+        logger.info(`User ${ctx.from.username} requested file list`);
         fs.readFile('files.json', 'utf8', (err, data) => {
             if (err) {
                 console.error(err);
@@ -68,6 +90,7 @@ bot.command('files', (ctx) => {
             ctx.replyWithHTML(message);
         });
     } else if (args[1] === 'get' && args[2]) {
+        logger.info(`User ${ctx.from.username} requested to download file with ID: ${args[2]}`);
         const fileId = args[2];
         fs.readFile('files.json', 'utf8', (err, data) => {
             if (err) {
@@ -119,6 +142,7 @@ bot.command('files', (ctx) => {
             }
         });
     } else {
+        logger.info(`User ${ctx.from.username} entered an invalid command`);
         ctx.replyWithHTML('Invalid command. Please use the format /files list or /files get &lt;id&gt;');
     }
 });
@@ -126,6 +150,7 @@ bot.command('files', (ctx) => {
 // ACTIONS
 
 bot.action('help', (ctx) => {
+    logger.info(`User ${ctx.from.username} requested help (via action)`);
     ctx.answerCbQuery();
     ctx.editMessageText('Please choose a topic:', {
         reply_markup: {
@@ -142,6 +167,7 @@ bot.action('help', (ctx) => {
 });
 
 bot.action('start', (ctx) => {
+    logger.info(`User ${ctx.from.username} went to welcome menu (via action)`);
     ctx.answerCbQuery();
     ctx.editMessageText(
         `Welcome, <b>${ctx.from.first_name}</b>!\nI'm PontusBot, an open source Telegram bot.\nHow can I help you?`,
@@ -160,6 +186,7 @@ bot.action('start', (ctx) => {
 });
 
 bot.action('general', (ctx) => {
+    logger.info(`User ${ctx.from.username} requested general commands help (via action)`);
     ctx.answerCbQuery();
     ctx.editMessageText(
         `<b>General Commands</b>\n\n/start - Start the bot\n/help - Show the help menu\n/about - Show information about the bot`,
@@ -175,6 +202,7 @@ bot.action('general', (ctx) => {
 });
 
 bot.action('about', (ctx) => {
+    logger.info(`User ${ctx.from.username} requested about message (via action)`);
     ctx.answerCbQuery();
     ctx.editMessageText(
         `<b>About PontusBot</b>\n\nPontusBot is an open source Telegram bot created by ihatenodejs.\n\nSource code: <a href="https://github.com/ihatenodejs/pontus-bot">Available on GitHub</a>`,
@@ -190,6 +218,7 @@ bot.action('about', (ctx) => {
 });
 
 bot.action('hfiles', (ctx) => {
+    logger.info(`User ${ctx.from.username} requested file commands help (via action)`);
     ctx.answerCbQuery();
     ctx.editMessageText(
         `<b>File Commands</b>\n\n/files list - List all available files\n/files get <i>file_id</i> - Download a file by ID`,
@@ -205,6 +234,7 @@ bot.action('hfiles', (ctx) => {
 });
 
 bot.action('management', (ctx) => {
+    logger.info(`User ${ctx.from.username} requested management commands help (via action)`);
     ctx.answerCbQuery();
     ctx.editMessageText('Coming soon...', {
         reply_markup: {
@@ -216,6 +246,7 @@ bot.action('management', (ctx) => {
 });
 
 bot.action('files', (ctx) => {
+    logger.info(`User ${ctx.from.username} requested file list (via action)`);
     fs.readFile('files.json', 'utf8', (err, data) => {
         if (err) {
             console.error(err);
@@ -233,6 +264,7 @@ bot.action('files', (ctx) => {
 });
 
 bot.action(/download_(.+)/, (ctx) => {
+    logger.info(`User ${ctx.from.username} called /download (via action)`);
     const fileId = ctx.match[1];
     fs.readFile('files.json', 'utf8', (err, data) => {
         if (err) {
@@ -286,6 +318,7 @@ bot.action(/download_(.+)/, (ctx) => {
 });
 
 bot.action(/arch_(.+)_(.+)/, (ctx) => {
+    logger.info(`User ${ctx.from.username} called /arch (via action)`);
     const [fileId, arch] = ctx.match.slice(1);
     fs.readFile('files.json', 'utf8', (err, data) => {
         if (err) {
@@ -329,3 +362,4 @@ bot.action(/arch_(.+)_(.+)/, (ctx) => {
 
 bot.launch();
 console.log('Bot is running...\n');
+logger.info(`Bot started successfully`);

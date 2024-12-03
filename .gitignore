@@ -137,3 +137,6 @@ package-lock.json
 
 # docker compose file
 docker-compose.yml
+
+# bot log file
+bot.log
