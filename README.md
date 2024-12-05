@@ -60,14 +60,14 @@ I am new to creating Telegram bots, so excuse the clutter and possibly unoptimiz
    ```
 
    After copying, you may delete the `.env.example` file.
-4. **Set up file directory**
+3. **Set up file directory**
 
    Create a `files` directory to serve files from. Copy all files you would like to serve to users into this directory, and edit the `files.json` file to match the correct path.
 
    ```bash
    mkdir files
    ```
-5. **Set up your file index**
+4. **Set up your file index**
 
    Copy the `files.json.example` to `files.json`, and add your own data in.
 
@@ -76,17 +76,17 @@ I am new to creating Telegram bots, so excuse the clutter and possibly unoptimiz
    ```
 
    The example file showcases two situations where there may be one or many architectures.
-6. **Build and run the Docker container**
+5. **Build and run the Docker container**
 
-   **6a.** Copy the example docker-compose file
+   **5a.** Copy the example docker-compose file
    ```bash
    cp docker-compose.yml.example docker-compose.yml
    ```
-   **6b.** Create the bot.log file
+   **5b.** Create the bot.log file
    ```bash
    touch bot.log
    ```
-   **6c.** Build and run
+   **5c.** Build and run
    ```bash
    npm install # This should be run on the host, not inside the Docker container
 
